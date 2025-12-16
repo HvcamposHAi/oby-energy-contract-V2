@@ -94,7 +94,7 @@ OBY ENERGY - CONTRATADA`;
 
             const carregarTemplateDoSupabase = async () => {
                 try {
-                    const response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=*&order=ordem.asc`, {
+                    const response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=*&limit=1`, {
                         headers: {
                             'Authorization': `Bearer ${SUPABASE_KEY}`,
                             'apikey': SUPABASE_KEY
@@ -104,9 +104,7 @@ OBY ENERGY - CONTRATADA`;
                     if (response.ok) {
                         const templates = await response.json();
                         if (templates && templates.length > 0) {
-                            // Juntar todos os templates ou pegar o primeiro
-                            const textoCompleto = templates.map(t => t.texto).join('\n\n');
-                            setTemplate(textoCompleto);
+                            setTemplate(templates[0].template_completo);
                             console.log('✅ Template carregado do Supabase');
                         } else {
                             // Tentar carregar do localStorage
@@ -187,8 +185,8 @@ OBY ENERGY - CONTRATADA`;
                     localStorage.setItem('oby_template_contrato', template);
                     localStorage.setItem('oby_campos_customizados', JSON.stringify(campos));
                     
-                    // Salvar no Supabase - verificar se já existe um template
-                    const checkResponse = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=id&order=ordem.asc&limit=1`, {
+                    // Salvar no Supabase - buscar o único registro
+                    const checkResponse = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=id&limit=1`, {
                         headers: {
                             'Authorization': `Bearer ${SUPABASE_KEY}`,
                             'apikey': SUPABASE_KEY
@@ -199,7 +197,7 @@ OBY ENERGY - CONTRATADA`;
                     
                     let response;
                     if (existentes && existentes.length > 0) {
-                        // Atualizar o primeiro template existente
+                        // Atualizar o registro existente
                         response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?id=eq.${existentes[0].id}`, {
                             method: 'PATCH',
                             headers: {
@@ -209,12 +207,11 @@ OBY ENERGY - CONTRATADA`;
                                 'Prefer': 'return=minimal'
                             },
                             body: JSON.stringify({
-                                texto: template,
-                                titulo: 'Template Principal'
+                                template_completo: template
                             })
                         });
                     } else {
-                        // Criar novo template
+                        // Criar novo registro (primeira vez)
                         response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates`, {
                             method: 'POST',
                             headers: {
@@ -224,9 +221,7 @@ OBY ENERGY - CONTRATADA`;
                                 'Prefer': 'return=minimal'
                             },
                             body: JSON.stringify({
-                                titulo: 'Template Principal',
-                                texto: template,
-                                ordem: 1
+                                template_completo: template
                             })
                         });
                     }
