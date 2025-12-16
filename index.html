@@ -187,37 +187,55 @@ OBY ENERGY - CONTRATADA`;
                     localStorage.setItem('oby_template_contrato', template);
                     localStorage.setItem('oby_campos_customizados', JSON.stringify(campos));
                     
-                    // Salvar no Supabase
-                    // Primeiro, deletar templates existentes
-                    await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates`, {
-                        method: 'DELETE',
+                    // Salvar no Supabase - verificar se já existe um template
+                    const checkResponse = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=id&order=ordem.asc&limit=1`, {
                         headers: {
                             'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'apikey': SUPABASE_KEY,
-                            'Prefer': 'return=minimal'
+                            'apikey': SUPABASE_KEY
                         }
                     });
                     
-                    // Criar novo template único
-                    const response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'apikey': SUPABASE_KEY,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({
-                            titulo: 'Template Principal',
-                            texto: template,
-                            ordem: 1
-                        })
-                    });
+                    const existentes = await checkResponse.json();
+                    
+                    let response;
+                    if (existentes && existentes.length > 0) {
+                        // Atualizar o primeiro template existente
+                        response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?id=eq.${existentes[0].id}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'apikey': SUPABASE_KEY,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'return=minimal'
+                            },
+                            body: JSON.stringify({
+                                texto: template,
+                                titulo: 'Template Principal'
+                            })
+                        });
+                    } else {
+                        // Criar novo template
+                        response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'apikey': SUPABASE_KEY,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'return=minimal'
+                            },
+                            body: JSON.stringify({
+                                titulo: 'Template Principal',
+                                texto: template,
+                                ordem: 1
+                            })
+                        });
+                    }
                     
                     if (response.ok) {
                         alert('✅ Template salvo com sucesso no Supabase e localmente!');
                     } else {
-                        throw new Error('Erro ao salvar no Supabase');
+                        const errorText = await response.text();
+                        throw new Error(errorText || 'Erro ao salvar no Supabase');
                     }
                 } catch (error) {
                     console.error('Erro ao salvar:', error);
