@@ -87,6 +87,57 @@ OBY ENERGY - CONTRATADA`;
             const [salvando, setSalvando] = useState(false);
             const [proposta, setProposta] = useState(null);
 
+            // Carregar template do Supabase ao iniciar
+            useEffect(() => {
+                carregarTemplateDoSupabase();
+            }, []);
+
+            const carregarTemplateDoSupabase = async () => {
+                try {
+                    const response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=*&order=ordem.asc`, {
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'apikey': SUPABASE_KEY
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const templates = await response.json();
+                        if (templates && templates.length > 0) {
+                            // Juntar todos os templates ou pegar o primeiro
+                            const textoCompleto = templates.map(t => t.texto).join('\n\n');
+                            setTemplate(textoCompleto);
+                            console.log('✅ Template carregado do Supabase');
+                        } else {
+                            // Tentar carregar do localStorage
+                            const localTemplate = localStorage.getItem('oby_template_contrato');
+                            if (localTemplate) {
+                                setTemplate(localTemplate);
+                                console.log('✅ Template carregado do localStorage');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar do Supabase:', error);
+                    // Tentar carregar do localStorage como fallback
+                    const localTemplate = localStorage.getItem('oby_template_contrato');
+                    if (localTemplate) {
+                        setTemplate(localTemplate);
+                        console.log('✅ Template carregado do localStorage (fallback)');
+                    }
+                }
+                
+                // Carregar campos customizados do localStorage
+                const camposSalvos = localStorage.getItem('oby_campos_customizados');
+                if (camposSalvos) {
+                    try {
+                        setCampos(JSON.parse(camposSalvos));
+                    } catch (e) {
+                        console.error('Erro ao carregar campos:', e);
+                    }
+                }
+            };
+
             const adicionarCampo = () => {
                 if (!novoCampo.nome || !novoCampo.descricao) {
                     alert('Preencha nome e descrição do campo!');
@@ -132,11 +183,45 @@ OBY ENERGY - CONTRATADA`;
             const salvarTemplate = async () => {
                 setSalvando(true);
                 try {
+                    // Salvar no localStorage (backup local)
                     localStorage.setItem('oby_template_contrato', template);
                     localStorage.setItem('oby_campos_customizados', JSON.stringify(campos));
-                    alert('✅ Template salvo com sucesso!');
+                    
+                    // Salvar no Supabase
+                    // Primeiro, deletar templates existentes
+                    await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'apikey': SUPABASE_KEY,
+                            'Prefer': 'return=minimal'
+                        }
+                    });
+                    
+                    // Criar novo template único
+                    const response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'apikey': SUPABASE_KEY,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({
+                            titulo: 'Template Principal',
+                            texto: template,
+                            ordem: 1
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        alert('✅ Template salvo com sucesso no Supabase e localmente!');
+                    } else {
+                        throw new Error('Erro ao salvar no Supabase');
+                    }
                 } catch (error) {
-                    alert('❌ Erro ao salvar: ' + error.message);
+                    console.error('Erro ao salvar:', error);
+                    alert('❌ Erro ao salvar no Supabase: ' + error.message + '\n\nMas foi salvo localmente no navegador.');
                 } finally {
                     setSalvando(false);
                 }
