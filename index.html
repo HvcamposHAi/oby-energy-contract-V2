@@ -20,65 +20,77 @@
         const SUPABASE_URL = 'https://uuaqmwnfjopgjmjjchmw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YXFtd25mam9wZ2ptampjaG13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1OTEyNzUsImV4cCI6MjA3NjE2NzI3NX0.9ITSBR9SNoZKgvF1AuW4OsL4b8Du5NAXttQpi7B3MO8';
 
-        // Template base do Termo de Adesão
+        // Template base
         const TEMPLATE_BASE = `PROPOSTA DE ADESÃO AO CONTRATO DE CONSÓRCIO
 
-O(A) PROPONENTE CONSORCIADO(A) encaminha sua Proposta de Adesão ao CONSÓRCIO, conforme condições abaixo:
+O(A) PROPONENTE CONSORCIADO(A) encaminha sua Proposta de Adesão ao CONSÓRCIO:
 
-DADOS DO CONSÓRCIO
-Razão Social: [Razao_Social_Consorcio]
-CNPJ: [CNPJ_Consorcio]
-Endereço: [Endereco_Consorcio]
-Consorciada Líder: [Consorciada_Lider]
-
-DADOS DO(A) PROPONENTE CONSORCIADO(A):
-Razão Social: [Nome_do_Cliente]
-CNPJ: [CPF_CNPJ]
-Endereço: [Endereco_Completo]
+DADOS DO(A) PROPONENTE:
+Nome/Razão Social: [Nome_do_Cliente]
+CPF/CNPJ: [CPF_CNPJ]
 Representante Legal: [Representante_Legal]
-E-mail de contato: [Email]
-Nº Unidade Consumidora: [Numero_da_Instalacao]
-Nº Cliente Concessionária: [Numero_Cliente_Concessionaria]
-Tipo de Conexão: [Tipo_de_Conexao]
-Consumo mínimo (kWh): [Consumo]
-Desconto sobre a Energia Injetada pelo Consórcio (%): [Desconto_Percentual]
+CPF do Representante: [CPF_Representante_Legal]
+RG do Representante: [RG_Representante_Legal]
+Email: [Email]
+Telefone: [Telefone]
+Endereço: [Endereco_Completo]
 
-ADESÃO AO CONSÓRCIO
-O(A) PROPONENTE CONSORCIADO(A) propõe neste ato ingressar no CONSÓRCIO, e compromete-se a cumprir o Contrato de Consórcio celebrado entre a LÍDER e as demais Partes Consorciadas.
+DADOS DA INSTALAÇÃO:
+Número da Instalação: [Numero_da_Instalacao]
+Distribuidora: [Distribuidora]
+Consumo: [Consumo] kWh
+Tipo de Conexão: [Tipo_de_Conexao]
 
 [Cidade], [Data]
 
 _________________________________
 CONTRATANTE
 [Nome_do_Cliente]
-CPF/CNPJ: [CPF_CNPJ]
+CPF/CNPJ: [CPF_CNPJ]`;
 
-_________________________________
-OBY ENERGY - CONTRATADA`;
-
-        // Campos variáveis disponíveis
+        // ✅ CAMPOS PADRÃO COM TODAS AS TAGS
         const CAMPOS_PADRAO = [
+            // CLIENTE
             { id: 1, nome: '[Nome_do_Cliente]', descricao: 'Nome completo do cliente', categoria: 'Cliente' },
             { id: 2, nome: '[CPF_CNPJ]', descricao: 'CPF ou CNPJ do cliente', categoria: 'Cliente' },
             { id: 3, nome: '[Email]', descricao: 'E-mail do cliente', categoria: 'Cliente' },
             { id: 4, nome: '[Telefone]', descricao: 'Telefone do cliente', categoria: 'Cliente' },
-            { id: 5, nome: '[Representante_Legal]', descricao: 'Representante legal (PJ)', categoria: 'Cliente' },
-            { id: 6, nome: '[Endereco_Completo]', descricao: 'Endereço completo', categoria: 'Endereço' },
-            { id: 7, nome: '[Cidade]', descricao: 'Cidade', categoria: 'Endereço' },
-            { id: 8, nome: '[Estado]', descricao: 'Estado (UF)', categoria: 'Endereço' },
-            { id: 9, nome: '[CEP]', descricao: 'CEP', categoria: 'Endereço' },
-            { id: 10, nome: '[Numero_da_Instalacao]', descricao: 'Número da instalação', categoria: 'Instalação' },
-            { id: 11, nome: '[Distribuidora]', descricao: 'Distribuidora de energia', categoria: 'Instalação' },
-            { id: 12, nome: '[Consumo]', descricao: 'Consumo em kWh', categoria: 'Instalação' },
-            { id: 13, nome: '[Tipo_de_Conexao]', descricao: 'Tipo de conexão (Mono/Bi/Tri)', categoria: 'Instalação' },
-            { id: 14, nome: '[Numero_do_Contrato]', descricao: 'Número do contrato OBY', categoria: 'Contrato' },
-            { id: 15, nome: '[Data]', descricao: 'Data atual formatada', categoria: 'Contrato' },
-            { id: 16, nome: '[Desconto_Percentual]', descricao: 'Percentual de desconto (%)', categoria: 'Financeiro' },
-            { id: 17, nome: '[Custo_Atual]', descricao: 'Custo atual (R$)', categoria: 'Financeiro' },
-            { id: 18, nome: '[Custo_OBY]', descricao: 'Custo OBY (R$)', categoria: 'Financeiro' },
-            { id: 19, nome: '[Economia_Mensal]', descricao: 'Economia mensal (R$)', categoria: 'Financeiro' },
-            { id: 20, nome: '[Razao_Social_Consorcio]', descricao: 'Razão social do consórcio', categoria: 'Consórcio' },
-            { id: 21, nome: '[CNPJ_Consorcio]', descricao: 'CNPJ do consórcio', categoria: 'Consórcio' },
+            { id: 5, nome: '[Representante_Legal]', descricao: 'Nome do representante legal', categoria: 'Cliente' },
+            { id: 6, nome: '[CPF_Representante_Legal]', descricao: 'CPF do representante legal', categoria: 'Cliente' },
+            { id: 7, nome: '[RG_Representante_Legal]', descricao: 'RG do representante legal', categoria: 'Cliente' },
+            
+            // ENDEREÇO
+            { id: 8, nome: '[Endereco_Completo]', descricao: 'Endereço completo', categoria: 'Endereço' },
+            { id: 9, nome: '[Logradouro]', descricao: 'Logradouro', categoria: 'Endereço' },
+            { id: 10, nome: '[Numero]', descricao: 'Número', categoria: 'Endereço' },
+            { id: 11, nome: '[Complemento]', descricao: 'Complemento', categoria: 'Endereço' },
+            { id: 12, nome: '[Bairro]', descricao: 'Bairro', categoria: 'Endereço' },
+            { id: 13, nome: '[Cidade]', descricao: 'Cidade', categoria: 'Endereço' },
+            { id: 14, nome: '[Estado]', descricao: 'Estado (UF)', categoria: 'Endereço' },
+            { id: 15, nome: '[CEP]', descricao: 'CEP', categoria: 'Endereço' },
+            
+            // INSTALAÇÃO
+            { id: 16, nome: '[Numero_da_Instalacao]', descricao: 'Número da instalação', categoria: 'Instalação' },
+            { id: 17, nome: '[Numero_Cliente_Concessionaria]', descricao: 'Nº cliente na concessionária', categoria: 'Instalação' },
+            { id: 18, nome: '[Distribuidora]', descricao: 'Distribuidora de energia', categoria: 'Instalação' },
+            { id: 19, nome: '[Consumo]', descricao: 'Consumo em kWh', categoria: 'Instalação' },
+            { id: 20, nome: '[Tipo_de_Conexao]', descricao: 'Tipo de conexão', categoria: 'Instalação' },
+            
+            // CONTRATO
+            { id: 21, nome: '[Numero_do_Contrato]', descricao: 'Número do contrato', categoria: 'Contrato' },
+            { id: 22, nome: '[Data]', descricao: 'Data atual', categoria: 'Contrato' },
+            
+            // FINANCEIRO
+            { id: 23, nome: '[Desconto_Percentual]', descricao: 'Desconto (%)', categoria: 'Financeiro' },
+            { id: 24, nome: '[Custo_Atual]', descricao: 'Custo atual', categoria: 'Financeiro' },
+            { id: 25, nome: '[Custo_OBY]', descricao: 'Custo OBY', categoria: 'Financeiro' },
+            { id: 26, nome: '[Economia_Mensal]', descricao: 'Economia mensal', categoria: 'Financeiro' },
+            
+            // CONSÓRCIO
+            { id: 27, nome: '[Razao_Social_Consorcio]', descricao: 'Razão social do consórcio', categoria: 'Consórcio' },
+            { id: 28, nome: '[CNPJ_Consorcio]', descricao: 'CNPJ do consórcio', categoria: 'Consórcio' },
+            { id: 29, nome: '[Endereco_Consorcio]', descricao: 'Endereço do consórcio', categoria: 'Consórcio' },
+            { id: 30, nome: '[Consorciada_Lider]', descricao: 'Consorciada líder', categoria: 'Consórcio' },
         ];
 
         function GestorTemplates() {
@@ -86,9 +98,7 @@ OBY ENERGY - CONTRATADA`;
             const [campos, setCampos] = useState(CAMPOS_PADRAO);
             const [novoCampo, setNovoCampo] = useState({ nome: '', descricao: '', categoria: 'Personalizado' });
             const [salvando, setSalvando] = useState(false);
-            const [proposta, setProposta] = useState(null);
 
-            // Carregar template do Supabase ao iniciar
             useEffect(() => {
                 carregarTemplateDoSupabase();
             }, []);
@@ -107,39 +117,26 @@ OBY ENERGY - CONTRATADA`;
                         if (templates && templates.length > 0) {
                             setTemplate(templates[0].template_completo);
                             console.log('✅ Template carregado do Supabase');
-                        } else {
-                            // Tentar carregar do localStorage
-                            const localTemplate = localStorage.getItem('oby_template_contrato');
-                            if (localTemplate) {
-                                setTemplate(localTemplate);
-                                console.log('✅ Template carregado do localStorage');
-                            }
                         }
                     }
                 } catch (error) {
-                    console.error('Erro ao carregar do Supabase:', error);
-                    // Tentar carregar do localStorage como fallback
-                    const localTemplate = localStorage.getItem('oby_template_contrato');
-                    if (localTemplate) {
-                        setTemplate(localTemplate);
-                        console.log('✅ Template carregado do localStorage (fallback)');
-                    }
+                    console.error('Erro ao carregar:', error);
                 }
                 
-                // Carregar campos customizados do localStorage
-                const camposSalvos = localStorage.getItem('oby_campos_customizados');
-                if (camposSalvos) {
-                    try {
-                        setCampos(JSON.parse(camposSalvos));
-                    } catch (e) {
-                        console.error('Erro ao carregar campos:', e);
-                    }
-                }
+                // ❌ REMOVIDO: Não carregar campos do localStorage para não sobrescrever CAMPOS_PADRAO
+                // const camposSalvos = localStorage.getItem('oby_campos_customizados');
+                // if (camposSalvos) {
+                //     try {
+                //         setCampos(JSON.parse(camposSalvos));
+                //     } catch (e) {
+                //         console.error('Erro ao carregar campos:', e);
+                //     }
+                // }
             };
 
             const adicionarCampo = () => {
                 if (!novoCampo.nome || !novoCampo.descricao) {
-                    alert('Preencha nome e descrição do campo!');
+                    alert('Preencha nome e descrição!');
                     return;
                 }
                 
@@ -172,7 +169,6 @@ OBY ENERGY - CONTRATADA`;
                 
                 setTemplate(antes + nomeCampo + depois);
                 
-                // Reposicionar cursor
                 setTimeout(() => {
                     textarea.focus();
                     textarea.setSelectionRange(start + nomeCampo.length, start + nomeCampo.length);
@@ -182,11 +178,9 @@ OBY ENERGY - CONTRATADA`;
             const salvarTemplate = async () => {
                 setSalvando(true);
                 try {
-                    // Salvar no localStorage (backup local)
                     localStorage.setItem('oby_template_contrato', template);
                     localStorage.setItem('oby_campos_customizados', JSON.stringify(campos));
                     
-                    // Salvar no Supabase - buscar o único registro
                     const checkResponse = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=id&limit=1`, {
                         headers: {
                             'Authorization': `Bearer ${SUPABASE_KEY}`,
@@ -198,7 +192,6 @@ OBY ENERGY - CONTRATADA`;
                     
                     let response;
                     if (existentes && existentes.length > 0) {
-                        // Atualizar o registro existente
                         response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?id=eq.${existentes[0].id}`, {
                             method: 'PATCH',
                             headers: {
@@ -207,12 +200,9 @@ OBY ENERGY - CONTRATADA`;
                                 'Content-Type': 'application/json',
                                 'Prefer': 'return=minimal'
                             },
-                            body: JSON.stringify({
-                                template_completo: template
-                            })
+                            body: JSON.stringify({ template_completo: template })
                         });
                     } else {
-                        // Criar novo registro (primeira vez)
                         response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates`, {
                             method: 'POST',
                             headers: {
@@ -221,21 +211,18 @@ OBY ENERGY - CONTRATADA`;
                                 'Content-Type': 'application/json',
                                 'Prefer': 'return=minimal'
                             },
-                            body: JSON.stringify({
-                                template_completo: template
-                            })
+                            body: JSON.stringify({ template_completo: template })
                         });
                     }
                     
                     if (response.ok) {
-                        alert('✅ Template salvo com sucesso no Supabase e localmente!');
+                        alert('✅ Template salvo com sucesso!');
                     } else {
-                        const errorText = await response.text();
-                        throw new Error(errorText || 'Erro ao salvar no Supabase');
+                        throw new Error('Erro ao salvar');
                     }
                 } catch (error) {
-                    console.error('Erro ao salvar:', error);
-                    alert('❌ Erro ao salvar no Supabase: ' + error.message + '\n\nMas foi salvo localmente no navegador.');
+                    console.error('Erro:', error);
+                    alert('❌ Erro ao salvar: ' + error.message);
                 } finally {
                     setSalvando(false);
                 }
@@ -243,26 +230,24 @@ OBY ENERGY - CONTRATADA`;
 
             const gerarPrevia = () => {
                 const dadosExemplo = {
-                    '[Nome_do_Cliente]': 'ICARAIMA II LTDA',
-                    '[CPF_CNPJ]': '46176395/0001-89',
-                    '[Email]': 'contato@obyenergy.com',
-                    '[Telefone]': '41 3779-3503',
+                    '[Nome_do_Cliente]': 'EMPRESA EXEMPLO LTDA',
+                    '[CPF_CNPJ]': '12.345.678/0001-90',
+                    '[Email]': 'contato@exemplo.com',
+                    '[Telefone]': '(41) 3333-4444',
+                    '[Representante_Legal]': 'João da Silva',
+                    '[CPF_Representante_Legal]': '123.456.789-00',
+                    '[RG_Representante_Legal]': '12.345.678-9',
                     '[Endereco_Completo]': 'Rua Exemplo, 123, Centro, Curitiba - PR',
                     '[Cidade]': 'Curitiba',
                     '[Estado]': 'PR',
                     '[CEP]': '80000-000',
                     '[Numero_da_Instalacao]': '21859167',
                     '[Distribuidora]': 'COPEL',
-                    '[Consumo]': '5000',
+                    '[Consumo]': '500',
                     '[Tipo_de_Conexao]': 'Trifásica',
                     '[Numero_do_Contrato]': 'OBY-2025-12345',
                     '[Data]': new Date().toLocaleDateString('pt-BR'),
                     '[Desconto_Percentual]': '15',
-                    '[Custo_Atual]': 'R$ 3.500,00',
-                    '[Custo_OBY]': 'R$ 2.975,00',
-                    '[Economia_Mensal]': 'R$ 525,00',
-                    '[Razao_Social_Consorcio]': 'CONSÓRCIO SOLAR PARANÁ',
-                    '[CNPJ_Consorcio]': '12.345.678/0001-90',
                 };
 
                 let previa = template;
@@ -270,7 +255,6 @@ OBY ENERGY - CONTRATADA`;
                     previa = previa.replace(new RegExp(campo.replace(/[[\]]/g, '\\$&'), 'g'), dadosExemplo[campo]);
                 });
 
-                // Gerar DOCX
                 const paragrafos = previa.split('\n').map(linha => {
                     const isTitulo = linha === linha.toUpperCase() && linha.length > 0 && linha.length < 100;
                     return new docx.Paragraph({
@@ -303,19 +287,26 @@ OBY ENERGY - CONTRATADA`;
                 <div className="min-h-screen bg-gray-50">
                     <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 shadow-lg">
                         <div className="container mx-auto">
-                            <h1 className="text-3xl font-bold">📄 Gestor de Templates de Contrato</h1>
-                            <p className="text-blue-100 mt-2">Personalize o template e gerencie campos variáveis</p>
+                            <h1 className="text-3xl font-bold">📄 Gestor de Templates - OBY Energy</h1>
+                            <p className="text-blue-100 mt-2">Versão NOVA com todas as tags corretas</p>
                         </div>
                     </div>
 
                     <div className="container mx-auto p-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Campos Variáveis */}
                             <div className="lg:col-span-1">
                                 <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
                                     <h2 className="text-xl font-bold mb-4">🏷️ Campos Variáveis</h2>
                                     
-                                    {/* Adicionar Novo Campo */}
+                                    <div className="bg-green-50 p-4 rounded-lg mb-4 border-2 border-green-500">
+                                        <p className="text-sm font-semibold text-green-800">✅ TODAS AS TAGS INCLUÍDAS:</p>
+                                        <p className="text-xs text-green-700 mt-1">
+                                            • CPF Representante Legal<br/>
+                                            • RG Representante Legal<br/>
+                                            • Nome Representante Legal
+                                        </p>
+                                    </div>
+
                                     <div className="bg-gray-50 p-4 rounded-lg mb-4">
                                         <h3 className="font-semibold mb-3">➕ Adicionar Campo</h3>
                                         <input
@@ -352,7 +343,6 @@ OBY ENERGY - CONTRATADA`;
                                         </button>
                                     </div>
 
-                                    {/* Lista de Campos */}
                                     <div className="max-h-[600px] overflow-y-auto">
                                         {categorias.map(cat => (
                                             <div key={cat} className="mb-4">
@@ -384,7 +374,6 @@ OBY ENERGY - CONTRATADA`;
                                 </div>
                             </div>
 
-                            {/* Editor de Template */}
                             <div className="lg:col-span-2">
                                 <div className="bg-white rounded-xl shadow-lg p-6">
                                     <h2 className="text-xl font-bold mb-4">📝 Editor de Template</h2>
@@ -394,7 +383,7 @@ OBY ENERGY - CONTRATADA`;
                                         value={template}
                                         onChange={(e) => setTemplate(e.target.value)}
                                         className="w-full h-[600px] p-4 border rounded-lg font-mono text-sm"
-                                        placeholder="Digite o template aqui. Clique nos campos ao lado para inserir variáveis."
+                                        placeholder="Digite o template aqui..."
                                     />
 
                                     <div className="flex gap-4 mt-4">
@@ -411,13 +400,6 @@ OBY ENERGY - CONTRATADA`;
                                         >
                                             👁️ Gerar Prévia DOCX
                                         </button>
-                                    </div>
-
-                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                                        <p className="text-sm text-gray-700">
-                                            <strong>💡 Dica:</strong> Clique nos campos ao lado para inseri-los no template. 
-                                            Os campos serão substituídos automaticamente pelos dados reais ao gerar o contrato.
-                                        </p>
                                     </div>
                                 </div>
                             </div>
