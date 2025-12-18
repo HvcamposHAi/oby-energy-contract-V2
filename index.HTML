@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBY Energy - Gestor de Templates</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const SUPABASE_URL = 'https://uuaqmwnfjopgjmjjchmw.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YXFtd25mam9wZ2ptampjaG13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1OTEyNzUsImV4cCI6MjA3NjE2NzI3NX0.9ITSBR9SNoZKgvF1AuW4OsL4b8Du5NAXttQpi7B3MO8';
+
+        // Template base
+        const TEMPLATE_BASE = `PROPOSTA DE ADESÃO AO CONTRATO DE CONSÓRCIO
+
+O(A) PROPONENTE CONSORCIADO(A) encaminha sua Proposta de Adesão ao CONSÓRCIO:
+
+DADOS DO(A) PROPONENTE:
+Nome/Razão Social: [Nome_do_Cliente]
+CPF/CNPJ: [CPF_CNPJ]
+Representante Legal: [Representante_Legal]
+CPF do Representante: [CPF_Representante_Legal]
+RG do Representante: [RG_Representante_Legal]
+Email: [Email]
+Telefone: [Telefone]
+Endereço: [Endereco_Completo]
+
+DADOS DA INSTALAÇÃO:
+Número da Instalação: [Numero_da_Instalacao]
+Distribuidora: [Distribuidora]
+Consumo: [Consumo] kWh
+Tipo de Conexão: [Tipo_de_Conexao]
+
+[Cidade], [Data]
+
+_________________________________
+CONTRATANTE
+[Nome_do_Cliente]
+CPF/CNPJ: [CPF_CNPJ]`;
+
+        // ✅ CAMPOS PADRÃO COM TODAS AS TAGS
+        const CAMPOS_PADRAO = [
+            // CLIENTE
+            { id: 1, nome: '[Nome_do_Cliente]', descricao: 'Nome completo do cliente', categoria: 'Cliente' },
+            { id: 2, nome: '[CPF_CNPJ]', descricao: 'CPF ou CNPJ do cliente', categoria: 'Cliente' },
+            { id: 3, nome: '[Email]', descricao: 'E-mail do cliente', categoria: 'Cliente' },
+            { id: 4, nome: '[Telefone]', descricao: 'Telefone do cliente', categoria: 'Cliente' },
+            { id: 5, nome: '[Representante_Legal]', descricao: 'Nome do representante legal', categoria: 'Cliente' },
+            { id: 6, nome: '[CPF_Representante_Legal]', descricao: 'CPF do representante legal', categoria: 'Cliente' },
+            { id: 7, nome: '[RG_Representante_Legal]', descricao: 'RG do representante legal', categoria: 'Cliente' },
+            
+            // ENDEREÇO
+            { id: 8, nome: '[Endereco_Completo]', descricao: 'Endereço completo', categoria: 'Endereço' },
+            { id: 9, nome: '[Logradouro]', descricao: 'Logradouro', categoria: 'Endereço' },
+            { id: 10, nome: '[Numero]', descricao: 'Número', categoria: 'Endereço' },
+            { id: 11, nome: '[Complemento]', descricao: 'Complemento', categoria: 'Endereço' },
+            { id: 12, nome: '[Bairro]', descricao: 'Bairro', categoria: 'Endereço' },
+            { id: 13, nome: '[Cidade]', descricao: 'Cidade', categoria: 'Endereço' },
+            { id: 14, nome: '[Estado]', descricao: 'Estado (UF)', categoria: 'Endereço' },
+            { id: 15, nome: '[CEP]', descricao: 'CEP', categoria: 'Endereço' },
+            
+            // INSTALAÇÃO
+            { id: 16, nome: '[Numero_da_Instalacao]', descricao: 'Número da instalação', categoria: 'Instalação' },
+            { id: 17, nome: '[Numero_Cliente_Concessionaria]', descricao: 'Nº cliente na concessionária', categoria: 'Instalação' },
+            { id: 18, nome: '[Distribuidora]', descricao: 'Distribuidora de energia', categoria: 'Instalação' },
+            { id: 19, nome: '[Consumo]', descricao: 'Consumo em kWh', categoria: 'Instalação' },
+            { id: 20, nome: '[Tipo_de_Conexao]', descricao: 'Tipo de conexão', categoria: 'Instalação' },
+            
+            // CONTRATO
+            { id: 21, nome: '[Numero_do_Contrato]', descricao: 'Número do contrato', categoria: 'Contrato' },
+            { id: 22, nome: '[Data]', descricao: 'Data atual', categoria: 'Contrato' },
+            
+            // FINANCEIRO
+            { id: 23, nome: '[Desconto_Percentual]', descricao: 'Desconto (%)', categoria: 'Financeiro' },
+            { id: 24, nome: '[Custo_Atual]', descricao: 'Custo atual', categoria: 'Financeiro' },
+            { id: 25, nome: '[Custo_OBY]', descricao: 'Custo OBY', categoria: 'Financeiro' },
+            { id: 26, nome: '[Economia_Mensal]', descricao: 'Economia mensal', categoria: 'Financeiro' },
+            
+            // CONSÓRCIO
+            { id: 27, nome: '[Razao_Social_Consorcio]', descricao: 'Razão social do consórcio', categoria: 'Consórcio' },
+            { id: 28, nome: '[CNPJ_Consorcio]', descricao: 'CNPJ do consórcio', categoria: 'Consórcio' },
+            { id: 29, nome: '[Endereco_Consorcio]', descricao: 'Endereço do consórcio', categoria: 'Consórcio' },
+            { id: 30, nome: '[Consorciada_Lider]', descricao: 'Consorciada líder', categoria: 'Consórcio' },
+        ];
+
+        function GestorTemplates() {
+            const [template, setTemplate] = useState(TEMPLATE_BASE);
+            const [campos, setCampos] = useState(CAMPOS_PADRAO);
+            const [novoCampo, setNovoCampo] = useState({ nome: '', descricao: '', categoria: 'Personalizado' });
+            const [salvando, setSalvando] = useState(false);
+
+            useEffect(() => {
+                carregarTemplateDoSupabase();
+            }, []);
+
+            const carregarTemplateDoSupabase = async () => {
+                try {
+                    const response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=*&limit=1`, {
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'apikey': SUPABASE_KEY
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const templates = await response.json();
+                        if (templates && templates.length > 0) {
+                            setTemplate(templates[0].template_completo);
+                            console.log('✅ Template carregado do Supabase');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar:', error);
+                }
+                
+                // ❌ REMOVIDO: Não carregar campos do localStorage para não sobrescrever CAMPOS_PADRAO
+                // const camposSalvos = localStorage.getItem('oby_campos_customizados');
+                // if (camposSalvos) {
+                //     try {
+                //         setCampos(JSON.parse(camposSalvos));
+                //     } catch (e) {
+                //         console.error('Erro ao carregar campos:', e);
+                //     }
+                // }
+            };
+
+            const adicionarCampo = () => {
+                if (!novoCampo.nome || !novoCampo.descricao) {
+                    alert('Preencha nome e descrição!');
+                    return;
+                }
+                
+                const nomeCampo = novoCampo.nome.startsWith('[') ? novoCampo.nome : `[${novoCampo.nome}]`;
+                const novoCampoObj = {
+                    id: campos.length + 1,
+                    nome: nomeCampo,
+                    descricao: novoCampo.descricao,
+                    categoria: novoCampo.categoria
+                };
+                
+                setCampos([...campos, novoCampoObj]);
+                setNovoCampo({ nome: '', descricao: '', categoria: 'Personalizado' });
+                alert('✅ Campo adicionado!');
+            };
+
+            const removerCampo = (id) => {
+                if (confirm('Remover este campo?')) {
+                    setCampos(campos.filter(c => c.id !== id));
+                }
+            };
+
+            const inserirCampo = (nomeCampo) => {
+                const textarea = document.getElementById('editor-template');
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const text = textarea.value;
+                const antes = text.substring(0, start);
+                const depois = text.substring(end);
+                
+                setTemplate(antes + nomeCampo + depois);
+                
+                setTimeout(() => {
+                    textarea.focus();
+                    textarea.setSelectionRange(start + nomeCampo.length, start + nomeCampo.length);
+                }, 10);
+            };
+
+            const salvarTemplate = async () => {
+                setSalvando(true);
+                try {
+                    localStorage.setItem('oby_template_contrato', template);
+                    localStorage.setItem('oby_campos_customizados', JSON.stringify(campos));
+                    
+                    const checkResponse = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?select=id&limit=1`, {
+                        headers: {
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'apikey': SUPABASE_KEY
+                        }
+                    });
+                    
+                    const existentes = await checkResponse.json();
+                    
+                    let response;
+                    if (existentes && existentes.length > 0) {
+                        response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates?id=eq.${existentes[0].id}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'apikey': SUPABASE_KEY,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'return=minimal'
+                            },
+                            body: JSON.stringify({ template_completo: template })
+                        });
+                    } else {
+                        response = await fetch(`${SUPABASE_URL}/rest/v1/contrato_templates`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'apikey': SUPABASE_KEY,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'return=minimal'
+                            },
+                            body: JSON.stringify({ template_completo: template })
+                        });
+                    }
+                    
+                    if (response.ok) {
+                        alert('✅ Template salvo com sucesso!');
+                    } else {
+                        throw new Error('Erro ao salvar');
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('❌ Erro ao salvar: ' + error.message);
+                } finally {
+                    setSalvando(false);
+                }
+            };
+
+            const gerarPrevia = () => {
+                const dadosExemplo = {
+                    '[Nome_do_Cliente]': 'EMPRESA EXEMPLO LTDA',
+                    '[CPF_CNPJ]': '12.345.678/0001-90',
+                    '[Email]': 'contato@exemplo.com',
+                    '[Telefone]': '(41) 3333-4444',
+                    '[Representante_Legal]': 'João da Silva',
+                    '[CPF_Representante_Legal]': '123.456.789-00',
+                    '[RG_Representante_Legal]': '12.345.678-9',
+                    '[Endereco_Completo]': 'Rua Exemplo, 123, Centro, Curitiba - PR',
+                    '[Cidade]': 'Curitiba',
+                    '[Estado]': 'PR',
+                    '[CEP]': '80000-000',
+                    '[Numero_da_Instalacao]': '21859167',
+                    '[Distribuidora]': 'COPEL',
+                    '[Consumo]': '500',
+                    '[Tipo_de_Conexao]': 'Trifásica',
+                    '[Numero_do_Contrato]': 'OBY-2025-12345',
+                    '[Data]': new Date().toLocaleDateString('pt-BR'),
+                    '[Desconto_Percentual]': '15',
+                };
+
+                let previa = template;
+                Object.keys(dadosExemplo).forEach(campo => {
+                    previa = previa.replace(new RegExp(campo.replace(/[[\]]/g, '\\$&'), 'g'), dadosExemplo[campo]);
+                });
+
+                const paragrafos = previa.split('\n').map(linha => {
+                    const isTitulo = linha === linha.toUpperCase() && linha.length > 0 && linha.length < 100;
+                    return new docx.Paragraph({
+                        text: linha,
+                        bold: isTitulo,
+                        spacing: { after: isTitulo ? 300 : 200 }
+                    });
+                });
+
+                const doc = new docx.Document({
+                    sections: [{
+                        properties: {
+                            page: {
+                                margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+                            }
+                        },
+                        children: paragrafos
+                    }]
+                });
+
+                docx.Packer.toBlob(doc).then(blob => {
+                    saveAs(blob, 'Previa_Contrato.docx');
+                    alert('✅ Prévia gerada!');
+                });
+            };
+
+            const categorias = [...new Set(campos.map(c => c.categoria))];
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 shadow-lg">
+                        <div className="container mx-auto">
+                            <h1 className="text-3xl font-bold">📄 Gestor de Templates - OBY Energy</h1>
+                            <p className="text-blue-100 mt-2">Versão NOVA com todas as tags corretas</p>
+                        </div>
+                    </div>
+
+                    <div className="container mx-auto p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-1">
+                                <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+                                    <h2 className="text-xl font-bold mb-4">🏷️ Campos Variáveis</h2>
+                                    
+                                    <div className="bg-green-50 p-4 rounded-lg mb-4 border-2 border-green-500">
+                                        <p className="text-sm font-semibold text-green-800">✅ TODAS AS TAGS INCLUÍDAS:</p>
+                                        <p className="text-xs text-green-700 mt-1">
+                                            • CPF Representante Legal<br/>
+                                            • RG Representante Legal<br/>
+                                            • Nome Representante Legal
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <h3 className="font-semibold mb-3">➕ Adicionar Campo</h3>
+                                        <input
+                                            type="text"
+                                            placeholder="Nome do campo"
+                                            value={novoCampo.nome}
+                                            onChange={(e) => setNovoCampo({...novoCampo, nome: e.target.value})}
+                                            className="w-full p-2 border rounded mb-2"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Descrição"
+                                            value={novoCampo.descricao}
+                                            onChange={(e) => setNovoCampo({...novoCampo, descricao: e.target.value})}
+                                            className="w-full p-2 border rounded mb-2"
+                                        />
+                                        <select
+                                            value={novoCampo.categoria}
+                                            onChange={(e) => setNovoCampo({...novoCampo, categoria: e.target.value})}
+                                            className="w-full p-2 border rounded mb-2"
+                                        >
+                                            <option value="Personalizado">Personalizado</option>
+                                            <option value="Cliente">Cliente</option>
+                                            <option value="Endereço">Endereço</option>
+                                            <option value="Instalação">Instalação</option>
+                                            <option value="Contrato">Contrato</option>
+                                            <option value="Financeiro">Financeiro</option>
+                                        </select>
+                                        <button
+                                            onClick={adicionarCampo}
+                                            className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                        >
+                                            Adicionar Campo
+                                        </button>
+                                    </div>
+
+                                    <div className="max-h-[600px] overflow-y-auto">
+                                        {categorias.map(cat => (
+                                            <div key={cat} className="mb-4">
+                                                <h4 className="font-semibold text-sm text-gray-600 mb-2">{cat}</h4>
+                                                {campos.filter(c => c.categoria === cat).map(campo => (
+                                                    <div key={campo.id} className="bg-gray-50 p-2 rounded mb-2 flex justify-between items-center">
+                                                        <div className="flex-1">
+                                                            <button
+                                                                onClick={() => inserirCampo(campo.nome)}
+                                                                className="text-left w-full hover:text-blue-600"
+                                                            >
+                                                                <span className="font-mono text-sm text-blue-600">{campo.nome}</span>
+                                                                <p className="text-xs text-gray-600">{campo.descricao}</p>
+                                                            </button>
+                                                        </div>
+                                                        {campo.categoria === 'Personalizado' && (
+                                                            <button
+                                                                onClick={() => removerCampo(campo.id)}
+                                                                className="ml-2 text-red-500 hover:text-red-700"
+                                                            >
+                                                                ❌
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="lg:col-span-2">
+                                <div className="bg-white rounded-xl shadow-lg p-6">
+                                    <h2 className="text-xl font-bold mb-4">📝 Editor de Template</h2>
+                                    
+                                    <textarea
+                                        id="editor-template"
+                                        value={template}
+                                        onChange={(e) => setTemplate(e.target.value)}
+                                        className="w-full h-[600px] p-4 border rounded-lg font-mono text-sm"
+                                        placeholder="Digite o template aqui..."
+                                    />
+
+                                    <div className="flex gap-4 mt-4">
+                                        <button
+                                            onClick={salvarTemplate}
+                                            disabled={salvando}
+                                            className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+                                        >
+                                            {salvando ? '💾 Salvando...' : '💾 Salvar Template'}
+                                        </button>
+                                        <button
+                                            onClick={gerarPrevia}
+                                            className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+                                        >
+                                            👁️ Gerar Prévia DOCX
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<GestorTemplates />, document.getElementById('root'));
+    </script>
+</body>
+</html>
